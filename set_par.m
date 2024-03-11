@@ -68,8 +68,8 @@ pars.X_K = 0.01; %5; % same as food - Half saturation coefficient of the functio
 pars.E_m = pars.p_Am/pars.v; % J.cm-3 - Maximum reserve density
 
 %% 5.2. Otolith module parameters
-pars.v_G = 1*10^(-8); % cm.d-1 - coupling coefficient to growth
-pars.v_D = 1*10^(-7); % cm.d-1 - coupling coefficient to dissipation
+pars.v_GC = 1*10^(-8); % cm^3.J-1 - coupling coefficient to growth
+pars.v_DC = 1*10^(-7); % cm^3.J-1 - coupling coefficient to dissipation
 
 %% 5.2. Auxiliary parameters (computing observable variables)
 pars.del_M = 0.43546; % - Shape coefficient to convert vol-length to physical length

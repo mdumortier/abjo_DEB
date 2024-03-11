@@ -112,7 +112,7 @@ else
     dEVHR(3) = 0; % dE_H
     dEVHR(4) = pars.kap_R * pR - pERes; % dE_R
 end
-dEVHR(5) = (pars.v_G*pG) + (pars.v_D*pD);
+dEVHR(5) = (pars.v_GC*pG) + (pars.v_DC*pD);
 end
 
 

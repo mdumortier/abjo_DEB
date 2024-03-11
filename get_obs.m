@@ -54,11 +54,53 @@ obs.L_O = (V_O.^(1/3))./pars.del_O;
 
 %% 7. Otolith opacity
 
+% 1. Environmental conditions
+X = food(Tps, pars); % Food density
+T = temp(Tps, pars); % Temperature
 
+% 2. Acceleration factor
+s_M = zeros(size(E_H));
 
+for i = 1:length(E_H)
 
+    if E_H(i) <= pars.E_Hb
+        s_M(i) = 1;
+    elseif E_H(i) <= pars.E_Hj && pars.V_b > 0
+        s_M(i) = (V(i) ./ pars.V_b).^(1/3);
+    elseif E_H(i) >= pars.E_Hj && pars.V_j > 0
+        s_M(i) = (pars.V_j / pars.V_b)^(1/3);
+    else
+        s_M(i) = 1;
+    end
+end
 
+% if E_H <= pars.E_Hb
+%     s_M = 1;
+% elseif E_H <= pars.E_Hj && pars.V_b > 0
+%     s_M = (V ./ pars.V_b).^(1/3);
+% elseif E_H >= pars.E_Hj && pars.V_j > 0
+%     s_M = (pars.V_j / pars.V_b)^(1/3);
+% else
+%     s_M = 1;
+% end
 
+% 3. Temperature correction function
+pars = corr_T(pars, T);
+
+% 4. Scaled functional response
+% f=X./(X+pars.X_K);
+f = 1;
+
+% 5. Flux calculation
+pS = pars.p_MT .* V + pars.p_TT .* V.^(2/3); % somatic maintenance
+pC = E.*((pars.E_G * s_M * pars.vT./V.^(1/3)+pS./V)./(pars.kap*E./V+pars.E_G)); % mobilization
+pJ = pars.k_JT * E_H; % maturity maintenance
+pR = (1 - pars.kap) * pC - pJ; % reproduction buffer
+pD = pS + pJ + (1-pars.kap_R)* pR; % Dissipation
+pG = pars.kap * pC - pS; % Growth
+
+% 6. Otolith opacity
+obs.O = (pars.v_GC.*pG) ./ (pars.v_GC.*pG + pars.v_DC.*pD);
 
 
 

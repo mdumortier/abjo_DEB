@@ -96,4 +96,12 @@ plot(Tps,obs.L_O,'k','LineWidth',1)
 xlabel('time (y)')
 ylabel('L_O (cm)')
 title('Otolith radius')
+
+subplot(3,4,8)
+hold on
+Tps = tEVHR.x./365;
+plot(Tps,obs.O,'k','LineWidth',1)
+xlabel('time (y)')
+ylabel('O (-)')
+title('Otolith opacity')
 end
