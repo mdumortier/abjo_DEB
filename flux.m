@@ -22,7 +22,8 @@ E = EVHR(1); % Energy in reserve
 V = EVHR(2); % Structure
 E_H = EVHR(3); % Maturity
 E_R = EVHR(4); % Energy in reproduction buffer
-V_O = EVHR(5); % Otolith volume
+V_C = EVHR(5); % Volume of CaCO3 (otolith)
+V_P = EVHR(6); % Volume of protein matrix (otolith)
 
 %% 2. Environmental conditions
 X = food(t, pars); % Food density
@@ -45,11 +46,14 @@ end
 %% 5. Temperature correction function
 pars = corr_T(pars, T); 
 
-%% 6. Scaled functional response
+%% 6. Temperature correction for CaCO3 precipitation
+cC_T = exp(pars.T_AC ./ pars.T_C - pars.T_AC ./ T);
+
+%% 7. Scaled functional response
 % f=X./(X+pars.X_K);
 f = 1;
 
-%% 7. Flux calculation
+%% 8. Flux calculation
 if E_H < pars.E_Hb  % before birth no assimilation
     pA = 0;
 else
@@ -62,19 +66,19 @@ pJ = pars.k_JT * E_H; % maturity maintenance
 pR = (1 - pars.kap) * pC - pJ; % reproduction buffer
 pD = pS + pJ + (1-pars.kap_R)* pR; % Dissipation
 
-%% 8. Case when maturity maintenance can't be paid
+%% 9. Case when maturity maintenance can't be paid
 if pJ < 0
     disp("! maturity maintenance can't be paid ! - EH = " + string(E_H) + " t = " + string(t));
     pR = 0;
 end
 
-%% 9. Starvation scenarios
+%% 10. Starvation scenarios
 pERes = 0;
 if pars.kap* pC < pS % if there is not enough mobilisation to pay p_S
     disp("Warning: somatic maintenance can't be paid");
     delta = abs(pars.kap * pC - pS); % Calculate missing energy needed
 
-    %% 9.1 The individual is an adult
+    %% 10.1 The individual is an adult
     if E_H >= pars.E_Hp
         if E_R >= delta % Enough energy in reprod. buffer
             pERes = delta; % Energy in reprod. buffer is used for rescue
@@ -85,7 +89,7 @@ if pars.kap* pC < pS % if there is not enough mobilisation to pay p_S
             disp('Energy in E_R is not enough : the individual died at ' + string(t));
         end
         
-    %% 9.2 The individual isn't an adult
+    %% 10.2 The individual isn't an adult
     else
         if pR >= delta % Enough energy meant for maturity
             pG = 0; % stop growth
@@ -100,8 +104,9 @@ else % if enough mobilisation to pay p_S
     pG = pars.kap * pC - pS; % Growth
 end
 
-%% 10. State variables differential equation
-dEVHR = zeros(5, 1); % initialize the state variables updates
+%% 11. State variables differential equation
+% dEVHR = zeros(5, 1); % initialize the state variables updates
+dEVHR = zeros(6, 1); % initialize the state variables updates
 
 dEVHR(1) = pA - pC; % dE
 dEVHR(2) = pG / pars.E_G; % dV   
@@ -112,7 +117,9 @@ else
     dEVHR(3) = 0; % dE_H
     dEVHR(4) = pars.kap_R * pR - pERes; % dE_R
 end
-dEVHR(5) = (pars.v_GC*pG) + (pars.v_DC*pD);
+% dEVHR(5) = (pars.v_GC*pG) + (pars.v_DC*pD); % dV_C
+dEVHR(5) = cC_T * ((pars.v_GC*pG) + (pars.v_DC*pD)); % dV_C
+dEVHR(6) = (pars.v_GP*pG) + (pars.v_DP*pD); % dV_P
 end
 
 

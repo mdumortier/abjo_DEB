@@ -26,7 +26,8 @@ E = tEVHR.y(1,:);
 V = tEVHR.y(2,:);
 E_H = tEVHR.y(3,:);
 E_R = tEVHR.y(4,:);
-V_O = tEVHR.y(5,:);
+V_C = tEVHR.y(5,:);
+V_P = tEVHR.y(6,:);
 
 %% 1.Physical length
 obs.L_w = (V.^(1/3))./pars.del_M; % cm - physical length
@@ -50,7 +51,7 @@ obs.F = floor((pars.kap_R*E_R)./pars.E_0); % Fecundity = egg number = kap_R
 obs.GSI = obs.W_ER./obs.W; % - Gonado-somatic index
 
 %% 6. Otolith radius
-obs.L_O = (V_O.^(1/3))./pars.del_O;
+obs.L_O = (V_C.^(1/3))./pars.del_O;
 
 %% 7. Otolith opacity
 
@@ -87,11 +88,14 @@ end
 % 3. Temperature correction function
 pars = corr_T(pars, T);
 
-% 4. Scaled functional response
+% 4. Temperature correction for CaCO3 precipitation
+cC_T = exp(pars.T_AC ./ pars.T_C - pars.T_AC ./ T);
+
+% 5. Scaled functional response
 % f=X./(X+pars.X_K);
 f = 1;
 
-% 5. Flux calculation
+% 6. Flux calculation
 pS = pars.p_MT .* V + pars.p_TT .* V.^(2/3); % somatic maintenance
 pC = E.*((pars.E_G * s_M * pars.vT./V.^(1/3)+pS./V)./(pars.kap*E./V+pars.E_G)); % mobilization
 pJ = pars.k_JT * E_H; % maturity maintenance
@@ -100,9 +104,10 @@ pD = pS + pJ + (1-pars.kap_R)* pR; % Dissipation
 pG = pars.kap * pC - pS; % Growth
 
 % 6. Otolith opacity
-obs.O = (pars.v_GC.*pG) ./ (pars.v_GC.*pG + pars.v_DC.*pD);
+obs.O = 1 ./ cC_T .* ((pars.v_GP.*pG) + (pars.v_DP.*pD)./ (pars.v_GC.*pG + pars.v_DC.*pD));
+% obs.O = (pars.v_GC.*pG) ./ (pars.v_GC.*pG + pars.v_DC.*pD);
 
-
+plot(Tps,pG)
 
 
 
